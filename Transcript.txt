@@ -1,0 +1,70 @@
+WHAT IS EXPRESS?
+
+Express is the most popular Node web framework, and is the underlying library for a number of other popular Node web frameworks.
+ It provides mechanisms to:
+1)Write handlers for requests with different HTTP verbs at different URL paths (routes).
+2)Integrate with "view" rendering engines in order to generate responses by inserting data into templates.
+3)Set common web application settings like the port to use for connecting, and the location of templates that are used for rendering the response.
+4)Add additional request processing "middleware" at any point within the request handling pipeline.
+
+
+WHAT DOES EXPRESS CODE LOOK LIKE?
+
+In a traditional data-driven website, a web application waits for HTTP requests from the web browser (or other client). 
+When a request is received the application works out what action is needed based on the URL pattern and possibly associated
+information contained in POST data or GET data. Depending on what is required it may then read or write information 
+from a database or perform other tasks required to satisfy the request. The application will then return a response to the web browser, 
+often dynamically creating an HTML page for the browser to display by inserting the retrieved data into placeholders in an HTML template.
+
+Express provides methods to specify what function is called for a particular HTTP verb (GET, POST, SET, etc.) and URL pattern ("Route"), 
+and methods to specify what template ("view") engine is used, where template files are located, and what template to use to render a response.
+ You can use Express middleware to add support for cookies, sessions, and users, getting POST/GET parameters, etc.
+
+HELLO WORLD
+The first two lines require() (import) the express module and create an Express application. 
+This object, which is traditionally named app, has methods for routing HTTP requests, configuring middleware,
+rendering HTML views, registering a template engine, and modifying application settings that control how the application 
+behaves (e.g. the environment mode, whether route definitions are case sensitive, etc.)
+
+The middle part of the code (the three lines starting with app.get) shows a route definition. 
+The app.get() method specifies a callback function that will be invoked whenever there is an HTTP GET request with a path ('/') 
+relative to the site root. The callback function takes a request and a response object as arguments, and simply calls send() 
+on the response to return the string "Hello World!"
+
+The final block starts up the server on port '3000' and prints a log comment to the console. 
+With the server running, you could go to localhost:3000 in your browser to see the example response returned
+
+FORM HANDKING PROCESS
+
+Form handling is not very complicated: 
+the route sends our request to a controller function which performs any database actions required, 
+including reading data from the models, then generates and returns an HTML page. 
+What makes things more complicated is that the server also needs to be able to process the data provided by the user,
+and redisplay the form with error information if there are any problems.
+
+1)Display the default form the first time it is requested by the user.
+The form may contain blank fields (e.g. if you're creating a new record), or it may be pre-populated with initial values 
+(e.g. if you are changing a record, or have useful default initial values).
+2)Receive data submitted by the user, usually in an HTTP POST request.
+3)Validate and sanitize the data.
+4)If any data is invalid, re-display the form—this time with any user populated values and error messages for the problem fields.
+5)If all data is valid, perform required actions (e.g. save the data in the database, send a notification email, 
+return the result of a search, upload a file, etc.)
+6)Once all actions are complete, redirect the user to another page.
+
+
+EXAMPLES 
+
+Specifies a set of fields in the request body (a POST parameter) to validate along with an optional
+error message that can be displayed if it fails the tests. 
+The validation criteria are daisy-chained to the body() method. For example, 
+the first check below tests that the "name" field is not empty and 
+sets an error message "Empty name" if it is not. The second test checks that the age 
+field is a valid date, and using optional() to specify that null and empty strings will not fail validation.
+
+Specifies a body field to sanitize. The sanitization operations are then daisy-chained to this method.
+For example, the escape() sanitization operation below removes HTML characters from the 
+name variable that might be used in JavaScript cross-site scripting attacks.
+
+Runs the validation, making errors available in the form of a validation result object. 
+This is invoked in a separate callback, as shown below:

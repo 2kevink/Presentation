@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>Node.js<br>Express<br>Forms</h1>
+				</section>
+				<section>
+					<h2>What is Express?</h2>
+					<span class="fragment">Express is the most popular Node web framework</span>
+					<aside class="notes">
+						and is the underlying library for a number of other popular Node web frameworks.
+						It provides mechanisms to:
+						1)Write handlers for requests with different HTTP verbs at different URL paths (routes).
+						2)Integrate with "view" rendering engines in order to generate responses by inserting data into templates.
+						3)Set common web application settings like the port to use for connecting, and the location of templates that are used for rendering the response.
+						4)Add additional request processing "middleware" at any point within the request handling pipeline.
+					</aside>
+				</section>
+				<section>
+					<h2>What does Express code look like?</h2>
+					<p class="fragment">In a traditional data-driven website, a web application waits for HTTP requests from the web browser (or other client). 
+						When a request is received the application works out what action is needed based on the URL pattern and possibly 
+						associated information contained in POST data or GET data.</p>
+					<aside class="notes">
+						Express provides methods to specify what function is called for a particular HTTP verb (GET, POST, SET, etc.) 
+						and URL pattern ("Route"), and methods to specify what template ("view") engine is used, where template files are located, 
+						and what template to use to render a response. 
+						You can use Express middleware to add support for cookies, sessions, and users, getting POST/GET parameters, etc. 
+					</aside>
+				</section>
+				<section>
+					<h2>Hello World!</h2>
+					<span class="fragment fade-in" data-markdown>
+						```javascript
+						var express = require('express');
+						var app = express();
+						
+						app.get('/', function(req, res) {
+						res.send('Hello World!');
+						});
+						
+						app.listen(3000, function() {
+						console.log('Example app listening on port 3000!');
+						});
+						```
+					</span>
+				</section>
+				<section>
+					<h2>Form handling process</h2>
+					<p class="fragment">Form handling is not very complicated: 
+						the route sends our request to a controller function which performs any database actions required, 
+						including reading data from the models, then generates and returns an HTML page. 
+						What makes things more complicated is that the server also needs to be able to process the data provided by the user,
+						and redisplay the form with error information if there are any problems.</p>
+				</section>
+				<section>
+					<h2>Form handling process</h2>
+					<img src="assets/1.png " width="600px" height="500px">
+					<aside class="notes">
+							1)Display the default form the first time it is requested by the user.
+							The form may contain blank fields (e.g. if you're creating a new record), or it may be pre-populated with initial values (e.g. if you are changing a record, or have useful default initial values).
+							2)Receive data submitted by the user, usually in an HTTP POST request.
+							3)Validate and sanitize the data.
+							4)If any data is invalid, re-display the form—this time with any user populated values and error messages for the problem fields.
+							5)If all data is valid, perform required actions (e.g. save the data in the database, send a notification email, return the result of a search, upload a file, etc.)
+							6)Once all actions are complete, redirect the user to another page.
+					</aside>
+				</section>
+				<section>
+					<h2>VALIDATION AND SANITIZATION</h2>
+					<p class="fragment">Before the data from a form is stored it must be validated and sanitized:</p>
+					<p class="fragment">Validation checks that entered values are appropriate for each field 
+						(are in the right range, format, etc.) and that values have been supplied for all required fields.</p>
+					<p class="fragment">Sanitization removes/replaces characters in the data that might potentially 
+						be used to send malicious content to the server.</p>
+				</section>
+				<section>
+					<h2>EXPRESS VALIDATOR</h2>
+					<p class="fragment">Express Validator is a module to perform both validation and sanitization of our form data.</p>
+					<span class="fragment fade-in" data-markdown>
+						```javascript 
+						npm install express-validator
+						```
+					</span>
+				</section>
+				<section>
+					<h2>EXPRESS VALIDATOR</h2>
+					<p class="fragment">To use the validator in our controllers we have to require the functions
+						 we want to use from the 'express-validator/check' and 'express-validator/filter' modules, as shown below:</p>
+				    <span class="fragment fade-in" data-markdown>
+						```javascript
+						const { body,validationResult } = require('express-validator/check');
+						const { sanitizeBody } = require('express-validator/filter');
+						```
+					</span>
+				</section>
+				<section>
+					<h2>Examples</h2>
+					<p class="fragment">body(fields[, message])</p>
+					<span class="fragment fade-in" data-markdown>
+						```javascript
+						body('name', 'Empty name').isLength({ min: 1 }), 
+body('age', 'Invalid age').optional({ checkFalsy: true }).isISO8601(),
+						```
+					</span>
+					<aside class="notes">
+						Specifies a set of fields in the request body (a POST parameter) to validate along with an optional
+						error message that can be displayed if it fails the tests. 
+						The validation criteria are daisy-chained to the body() method. For example, 
+						the first check below tests that the "name" field is not empty and 
+						sets an error message "Empty name" if it is not. The second test checks that the age 
+						field is a valid date, and using optional() to specify that null and empty strings will not fail validation.
+					</aside>
+				</section>
+				<section>
+					<h2>Examples</h2>
+					<p class="fragment">sanitizeBody(fields)</p>
+					<span class="fragment fade-in" data-markdown>
+						```javascript
+						sanitizeBody('name').trim().escape(),
+sanitizeBody('date').toDate()
+						```
+					</span>
+					<aside class="notes">
+					Specifies a body field to sanitize. The sanitization operations are then daisy-chained to this method.
+					For example, the escape() sanitization operation below removes HTML characters from the 
+					name variable that might be used in JavaScript cross-site scripting attacks.
+					</aside>
+				</section>
+				<section>
+					<h2>Examples</h2>
+					<p class="fragment">validationResult(req)</p>
+					<span class="fragment fade-in" data-markdown>
+						```javascript
+						(req, res, next) => {
+							// Extract the validation errors from a request.
+							const errors = validationResult(req);
+						
+							if (!errors.isEmpty()) {
+								// There are errors. Render form again with sanitized values/errors messages.
+								// Error messages can be returned in an array using `errors.array()`.
+								}
+							else {
+								// Data from form is valid.
+							}
+						}
+						```
+					</span>
+					<aside class="notes">
+						Runs the validation, making errors available in the form of a validation result object. 
+						This is invoked in a separate callback, as shown below:
+					</aside>
+				</section>
+				<section>
+					<h1>Thank you!</h1>
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
